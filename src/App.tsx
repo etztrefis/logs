@@ -1,25 +1,21 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useEffect } from "react";
+import MainPage from "./pages/Main/MainPage";
+import { Route, Switch, useLocation, useHistory } from "react-router-dom";
 
 function App() {
+  const location = useLocation();
+  const history = useHistory();
+
+  useEffect(() => {
+    console.log("Location changed", location);
+  }, [location]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Switch>
+      <Route exact path="/">
+        <MainPage />
+      </Route>
+    </Switch>
   );
 }
 
