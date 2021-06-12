@@ -1,7 +1,8 @@
 const colors = require("tailwindcss/colors");
 
 module.exports = {
-  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+  purge: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
+  darkMode: "class",
   theme: {
     zIndex: {
       1000: 1000,
@@ -17,6 +18,9 @@ module.exports = {
         2000: "2000ms",
       },
       colors: {
+        primary: "var(--color-primary)",
+        darkLight: "var(--color-dark-light)",
+        darkDark: "var(--color-dark-dark)",
         warning: colors.yellow[500],
         info: colors.indigo[600],
         success: colors.green[500],
