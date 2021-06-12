@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import Layout from "./layouts/Layout";
 import MainPage from "./pages/Main/MainPage";
 import { Route, Switch, useLocation, useHistory } from "react-router-dom";
 
@@ -8,14 +9,17 @@ function App() {
 
   useEffect(() => {
     console.log("Location changed", location);
-  }, [location]);
+    console.log("History changed", history);
+  }, [location, history]);
 
   return (
-    <Switch>
-      <Route exact path="/">
-        <MainPage />
-      </Route>
-    </Switch>
+    <Layout>
+      <Switch>
+        <Route exact path="/">
+          <MainPage />
+        </Route>
+      </Switch>
+    </Layout>
   );
 }
 

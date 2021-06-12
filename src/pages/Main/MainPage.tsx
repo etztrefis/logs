@@ -1,7 +1,6 @@
 import { FC } from "react";
-import { classNames } from "../../utils";
 
-const MainPage: FC<{ className?: string }> = ({ className, children }) => {
+const MainPage: FC<{}> = ({ children }) => {
   return <div>123{children}</div>;
 };
 
