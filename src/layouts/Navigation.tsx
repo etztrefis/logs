@@ -1,14 +1,27 @@
 import { FC } from "react";
-import { Link } from "react-router-dom";
-import { ThemeSwitcher } from "../components/index";
+import { classNames } from "../utils";
 import { Disclosure } from "@headlessui/react";
-import { MenuIcon, XIcon } from "@heroicons/react/outline";
+import { ThemeSwitcher } from "../components/index";
+import { Link, useLocation } from "react-router-dom";
+import ppSpin from "../assets/images/ppSpin.webp";
+import {
+  MenuIcon,
+  XIcon,
+  ViewGridIcon,
+  CogIcon,
+} from "@heroicons/react/outline";
+import GithubIcon from "../assets/GithubIcons";
 
 const Navigation: FC<{
   enabled: boolean;
   setEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }> = ({ enabled, setEnabled }) => {
+  const location = useLocation();
+  const getPath = (name: string) => {
+    return location.pathname === name ? true : false;
+  };
   return (
+    // TODO: sticky top backdrop-filter blur and some shit
     <Disclosure as="nav" className="bg-white dark:bg-darkLight shadow">
       {({ open }) => (
         <>
@@ -32,48 +45,73 @@ const Navigation: FC<{
                 </Disclosure.Button>
               </div>
               <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
-                <div className="flex-shrink-0 flex items-center">
-                  <img
-                    className="block h-8 w-auto"
-                    src="https://tailwindui.com/img/logos/workflow-logo-indigo-600-mark-gray-800-text.svg"
-                    alt="Workflow"
-                  />
-                </div>
-                <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                  {/* Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" */}
+                <Link
+                  to="/"
+                  className="flex-shrink-0 flex items-center space-x-2 dark:text-white text-gray-900 hover:text-primary dark:hover:text-primary transition duration-300"
+                >
+                  <img src={ppSpin} alt="ppSpin" className="mb-6" />
+                  <span className="text-2xl font-semibold">twitchlogs</span>
+                </Link>
+                <div className="hidden sm:ml-14 sm:flex sm:space-x-8">
                   <Link
-                    to=""
-                    className="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                    to="/"
+                    className={classNames(
+                      getPath("/" || "")
+                        ? "border-primary text-gray-900 dark:text-white dark:hover:text-gray-300"
+                        : "border-transparent text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 hover:border-gray-300 hover:text-gray-700",
+                      "transition duration-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium space-x-2",
+                    )}
                   >
-                    Dashboard
+                    <ViewGridIcon className="w-6 h-6 opacity-50" />
+                    <span>Dashboard</span>
                   </Link>
                   <Link
-                    to=""
-                    className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                    to="settings"
+                    className={classNames(
+                      getPath("/settings")
+                        ? "border-primary text-gray-900 dark:text-white dark:hover:text-gray-300"
+                        : "border-transparent text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 hover:border-gray-300 hover:text-gray-700",
+                      "transition duration-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium space-x-2",
+                    )}
                   >
-                    Settings
+                    <CogIcon className="w-6 h-6 opacity-50" />
+                    <span>Settings</span>
                   </Link>
                 </div>
               </div>
               <div className="flex items-center justify-center">
                 <ThemeSwitcher checked={enabled} onChange={setEnabled} />
+                <a href="https://github.com/etztrefis/twitchlogs" target="_blank" rel="noreferrer">
+                  <GithubIcon className="w-8 h-8 dark:text-white ml-6 dark:hover:text-primary hover:text-primary md:ml-10 transition duration-200" />
+                </a>
               </div>
             </div>
           </div>
           <Disclosure.Panel className="sm:hidden">
             <div className="pt-2 pb-4 space-y-1">
-              {/* Current: "bg-indigo-50 border-indigo-500 text-indigo-700", Default: "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700" */}
               <Link
-                to=""
-                className="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                to="/"
+                className={classNames(
+                  getPath("/" || "")
+                    ? "dark:bg-gray-800 bg-indigo-50 border-primary text-primary"
+                    : "border-transparent text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-400",
+                  "transition duration-200 flex pl-3 pr-4 py-2 border-l-4 text-base font-medium space-x-2",
+                )}
               >
-                Dashboard
+                <ViewGridIcon className="w-6 h-6 opacity-50" />
+                <span>Dashboard</span>
               </Link>
               <Link
-                to=""
-                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                to="settings"
+                className={classNames(
+                  getPath("/settings")
+                    ? "dark:bg-gray-800 bg-indigo-50 border-primary text-primary"
+                    : "border-transparent text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-400",
+                  "transition duration-200 flex pl-3 pr-4 py-2 border-l-4 text-base font-medium space-x-2",
+                )}
               >
-                Settings
+                <CogIcon className="w-6 h-6 opacity-50" />
+                <span>Settings</span>
               </Link>
             </div>
           </Disclosure.Panel>
