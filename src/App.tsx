@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Layout from "./layouts/Layout";
 import MainPage from "./pages/Main/MainPage";
+import SettingsPage from "./pages/Settings/SettingsPage";
 import { Route, Switch, useLocation, useHistory } from "react-router-dom";
 
 function App() {
@@ -17,6 +18,10 @@ function App() {
       <Switch>
         <Route exact path="/">
           <MainPage />
+        </Route>
+        <Route exact path="/settings">
+          <MainPage />
+          <SettingsPage />
         </Route>
       </Switch>
     </Layout>
