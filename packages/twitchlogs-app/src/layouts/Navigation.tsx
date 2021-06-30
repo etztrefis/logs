@@ -21,7 +21,7 @@ const Navigation: FC<{
     return location.pathname === name ? true : false;
   };
   return (
-    // TODO: sticky top backdrop-filter blur and some shit
+    // TODO: sticky top backdrop-filter blur and some shit  
     <Disclosure as="nav" className="bg-white dark:bg-darkLight shadow">
       {({ open }) => (
         <>
