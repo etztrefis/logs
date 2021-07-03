@@ -1,6 +1,7 @@
-require("dotenv").config({path: "../../.env"});
+require("dotenv").config({ path: "../../.env" });
 const chalk = require("chalk");
 const Sequelize = require("sequelize");
+const { QueryTypes } = require("sequelize");
 const axios = require("axios").default;
 const { ChatClient } = require("dank-twitch-irc");
 
@@ -21,8 +22,6 @@ const client = new ChatClient({
   rateLimits: "default",
 });
 
-const channels = ["trefis", "aceu"];
-
 client.on("ready", () =>
   console.log(chalk.green("Twitch client is ready to connect.")),
 );
@@ -39,13 +38,55 @@ client.on("close", (error) => {
   }
 })();
 
-client.connect();
+const channels = ["trefis"];
+(async () => {
+  await sequelize
+    .query("SELECT ChannelID FROM TwitchLogs.Channels WHERE Availiable = 1")
+    .then(async (data) => {
+      data[0].forEach(async (channel) => {
+        const { data } = await axios({
+          method: "get",
+          url: `https://api.twitch.tv/helix/users?id=${channel.ChannelID}`,
+          responseType: "json",
+          headers: {
+            "Client-Id": process.env.CLIENTID,
+            Authorization: process.env.BEARER,
+          },
+        });
+        const channelName = data.data[0]["login"];
+        channels.push(channelName);
+      });
+      client.connect();
+    })
+    .catch((error) => {
+      console.error(
+        chalk.red(`Error while selecting a list of channels: ${error}`),
+      );
+    });
+})();
 
 const prefix = process.env.PREFIX;
 const main = process.env.MAIN;
 const admins = process.env.ADMINS.split(" ");
 
 client.on("PRIVMSG", async (message) => {
+  await sequelize.query(
+    `INSERT INTO 
+     TwitchLogs.${message.channelID} (SenderID, Name, Message, Emotes, Color, Badges)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    {
+      replacements: [
+        message.senderUserID,
+        message.displayName,
+        message.messageText,
+        message.emotes.length === 0 ? null : JSON.stringify(message.emotes),
+        message.colorRaw,
+        message.badges.length === 0 ? null : JSON.stringify(message.badges),
+      ],
+      type: QueryTypes.INSERT,
+    },
+  );
+
   if (message.messageText.charAt(0) === prefix) {
     const args = message.messageText.substring(1).split(" ");
     if (args[0] === main) {
@@ -59,8 +100,8 @@ client.on("PRIVMSG", async (message) => {
               );
             } else {
               let channels = args[2].includes(",")
-                ? args[2].split(",")
-                : [args[2]];
+                ? args[2].split(",").toLowerCase()
+                : [args[2].toLowerCase()];
               channels.map(async (channel) => {
                 const { data } = await axios({
                   method: "get",
@@ -71,7 +112,7 @@ client.on("PRIVMSG", async (message) => {
                     Authorization: process.env.BEARER,
                   },
                 });
-                if (data.data !== null) {
+                if (data.data[0] !== null) {
                   const channelId = data.data[0]["id"];
                   await sequelize
                     .query(
@@ -86,18 +127,21 @@ client.on("PRIVMSG", async (message) => {
                           .then(async () => {
                             await sequelize
                               .query(
-                                `CREATE TABLE ${channel} (
-                              \`ID\` INT(11) NOT NULL AUTO_INCREMENT,
-                              \`SenderID\` VARCHAR(10) NULL DEFAULT NULL,
-                              \`Name\` VARCHAR(30) NOT NULL DEFAULT 'No name provided',
-                              \`Message\` TEXT NULL DEFAULT 'No message provided',
-                              \`Color\` VARCHAR(7) NULL DEFAULT NULL,
-                              \`Badges\` TEXT NULL DEFAULT NULL,
-                              \`Timestamp\` TIMESTAMP NULL DEFAULT current_timestamp(),
-                              PRIMARY KEY (\`ID\`)
-                            )
-                            COMMENT='Logs from ${channel} channel.'
-                            COLLATE='utf8mb4_general_ci';`,
+                                `CREATE TABLE \`${channelId}\` (
+                                \`ID\` INT(11) NOT NULL AUTO_INCREMENT,
+                                \`SenderID\` VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                                \`Name\` VARCHAR(30) NOT NULL DEFAULT 'No name provided' COLLATE 'utf8mb4_general_ci',
+                                \`Message\` TEXT NULL DEFAULT 'No message provided' COLLATE 'utf8mb4_general_ci',
+                                \`Emotes\` TEXT NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                                \`Color\` VARCHAR(7) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                                \`Badges\` TEXT NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                                \`Timestamp\` TIMESTAMP NULL DEFAULT current_timestamp(),
+                                PRIMARY KEY (\`ID\`) USING BTREE
+                              )
+                              COMMENT='Logs from ${channel} channel.'
+                              COLLATE='utf8mb4_general_ci'
+                              ENGINE=InnoDB
+                              ;`,
                               )
                               .then(() => {
                                 client.join(channel);
@@ -268,19 +312,3 @@ client
   .then(() => {
     console.log(chalk.blue("Success.. 👌"));
   });
-/* 
-CREATE TABLE `trefis` (
-	`ID` INT(11) NOT NULL AUTO_INCREMENT,
-	`SenderID` VARCHAR(10) NULL DEFAULT NULL,
-	`Name` VARCHAR(30) NOT NULL DEFAULT 'No name provided',
-	`Message` TEXT NULL DEFAULT 'No message provided',
-	`Color` VARCHAR(7) NULL DEFAULT NULL,
-	`Badges` TEXT NULL DEFAULT NULL,
-	`Timestamp` TIMESTAMP NULL DEFAULT current_timestamp(),
-	PRIMARY KEY (`ID`)
-)
-COMMENT='Logs from trefis channel.'
-COLLATE='utf8mb4_general_ci'
-;
-
-*/
