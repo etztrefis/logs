@@ -3,6 +3,7 @@ const chalk = require("chalk");
 const Sequelize = require("sequelize");
 const { QueryTypes } = require("sequelize");
 const axios = require("axios").default;
+const Twitch = require("dank-twitch-irc");
 const { ChatClient } = require("dank-twitch-irc");
 
 const sequelize = new Sequelize(
@@ -29,6 +30,29 @@ client.on("close", (error) => {
   console.error(chalk.red(`Twitch client was closed | ${error}`));
 });
 
+client.on("error", (error) => {
+  if (error instanceof Twitch.LoginError) {
+    console.error(
+      chalk.yellow(`"[LOGIN]" || Error logging in to Twitch: ${error}`),
+    );
+  }
+  if (error instanceof Twitch.JoinError) {
+    console.error(
+      chalk.yellow(
+        `"[JOIN]" || Error joining channel ${error.failedChannelName}: ${error}`,
+      ),
+    );
+  }
+  if (error instanceof Twitch.SayError) {
+    console.error(
+      chalk.yellow(
+        `"[SAY]" || Error sending message in ${error.failedChannelName}: ${error.cause} | ${error}`,
+      ),
+    );
+  }
+  console.error(chalk.yellow(`"[ERROR]" || Error occurred in DTI: ${error}`));
+});
+
 (async () => {
   try {
     await sequelize.authenticate();
@@ -38,7 +62,7 @@ client.on("close", (error) => {
   }
 })();
 
-const channels = ["trefis"];
+const channels = [process.env.DEFAULTCHANNEL];
 (async () => {
   await sequelize
     .query("SELECT ChannelID FROM TwitchLogs.Channels WHERE Availiable = 1")
@@ -55,8 +79,24 @@ const channels = ["trefis"];
         });
         const channelName = data.data[0]["login"];
         channels.push(channelName);
+        //TODO: fix that
       });
-      client.connect();
+      setTimeout(() => {
+        client
+          .joinAll(channels)
+          .catch((error) => {
+            console.error(chalk.red("Timed out while connecting: ", error));
+          })
+          .then(() => {
+            console.log(
+              chalk.magenta("Successfully connected to the twitch servers."),
+            );
+          })
+          .then(() => {
+            console.log(chalk.blue("Success.. 👌"));
+          });
+          client.connect();
+      }, 500);
     })
     .catch((error) => {
       console.error(
@@ -112,17 +152,22 @@ client.on("PRIVMSG", async (message) => {
                     Authorization: process.env.BEARER,
                   },
                 });
-                if (data.data[0] !== null) {
+                if (data.data[0] !== null && data.data[0] !== undefined) {
                   const channelId = data.data[0]["id"];
                   await sequelize
                     .query(
-                      `SELECT * FROM TwitchLogs.Channels WHERE ChannelID = ${channelId}`,
+                      `SELECT * FROM TwitchLogs.Channels WHERE ChannelID = ?`,
+                      { replacements: [channelId], type: QueryTypes.SELECT },
                     )
                     .then(async (data) => {
-                      if (data.toString() == ",") {
+                      if (data.length == 0) {
                         await sequelize
                           .query(
-                            `INSERT INTO TwitchLogs.Channels (ChannelID, Name) VALUES ('${channelId}', '${channel}')`,
+                            `INSERT INTO TwitchLogs.Channels (ChannelID, Name) VALUES (?, ?)`,
+                            {
+                              replacements: [channelId, channel],
+                              type: QueryTypes.INSERT,
+                            },
                           )
                           .then(async () => {
                             await sequelize
@@ -136,12 +181,13 @@ client.on("PRIVMSG", async (message) => {
                                 \`Color\` VARCHAR(7) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
                                 \`Badges\` TEXT NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
                                 \`Timestamp\` TIMESTAMP NULL DEFAULT current_timestamp(),
-                                PRIMARY KEY (\`ID\`) USING BTREE
-                              )
+                                PRIMARY KEY (\`ID\`) USING BTREE)
                               COMMENT='Logs from ${channel} channel.'
                               COLLATE='utf8mb4_general_ci'
-                              ENGINE=InnoDB
-                              ;`,
+                              ENGINE=InnoDB;`,
+                                {
+                                  type: QueryTypes.RAW,
+                                },
                               )
                               .then(() => {
                                 client.join(channel);
@@ -174,10 +220,14 @@ client.on("PRIVMSG", async (message) => {
                             );
                           });
                       } else {
-                        if (data[0][0].Availiable == 0) {
+                        if (data[0].Availiable == 0) {
                           await sequelize
                             .query(
-                              `UPDATE TwitchLogs.Channels SET Availiable = 1 WHERE ChannelID = ${channelId}`,
+                              `UPDATE TwitchLogs.Channels SET Availiable = 1 WHERE ChannelID = ?`,
+                              {
+                                replacements: [channelId],
+                                type: QueryTypes.UPDATE,
+                              },
                             )
                             .then(() => {
                               client
@@ -188,7 +238,7 @@ client.on("PRIVMSG", async (message) => {
                                 .catch((error) => {
                                   console.error(
                                     chalk.red(
-                                      `Error while selecting channel with ID = ${channelId}: ${error}`,
+                                      `Error while updating channel with ID = ${channelId}: ${error}`,
                                     ),
                                   );
                                   client.say(
@@ -249,13 +299,18 @@ client.on("PRIVMSG", async (message) => {
                   const channelId = data.data[0]["id"];
                   await sequelize
                     .query(
-                      `SELECT * FROM TwitchLogs.Channels WHERE ChannelID = ${channelId}`,
+                      `SELECT * FROM TwitchLogs.Channels WHERE ChannelID = ?`,
+                      { replacements: [channelId], type: QueryTypes.SELECT },
                     )
                     .then(async (data) => {
                       if (data.toString() !== ",") {
                         await sequelize
                           .query(
-                            `UPDATE TwitchLogs.Channels SET Availiable = 0 WHERE ChannelID = ${channelId}`,
+                            `UPDATE TwitchLogs.Channels SET Availiable = 0 WHERE ChannelID = ?`,
+                            {
+                              replacements: [channelId],
+                              type: QueryTypes.UPDATE,
+                            },
                           )
                           .then(() => {
                             client.part(channel);
@@ -300,15 +355,3 @@ client.on("PRIVMSG", async (message) => {
     }
   }
 });
-
-client
-  .joinAll(channels)
-  .catch((error) => {
-    console.error(chalk.red("Timed out while connecting: ", error));
-  })
-  .then(() => {
-    console.log(chalk.magenta("Successfully connected to the twitch servers."));
-  })
-  .then(() => {
-    console.log(chalk.blue("Success.. 👌"));
-  });
