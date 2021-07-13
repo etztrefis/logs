@@ -65,7 +65,7 @@ client.on("error", (error) => {
 const channels = [process.env.DEFAULTCHANNEL];
 (async () => {
   await sequelize
-    .query("SELECT ChannelID FROM TwitchLogs.Channels WHERE Availiable = 1")
+    .query("SELECT ChannelID FROM TwitchLogs.Channels WHERE Availiable = 1 AND Name != 'trefis'")
     .then(async (data) => {
       data[0].forEach(async (channel) => {
         const { data } = await axios({
@@ -79,7 +79,6 @@ const channels = [process.env.DEFAULTCHANNEL];
         });
         const channelName = data.data[0]["login"];
         channels.push(channelName);
-        //TODO: fix that
       });
       setTimeout(() => {
         client
@@ -96,7 +95,7 @@ const channels = [process.env.DEFAULTCHANNEL];
             console.log(chalk.blue("Success.. 👌"));
           });
           client.connect();
-      }, 500);
+      }, 1000);
     })
     .catch((error) => {
       console.error(
@@ -110,6 +109,7 @@ const main = process.env.MAIN;
 const admins = process.env.ADMINS.split(" ");
 
 client.on("PRIVMSG", async (message) => {
+  console.log(message);
   await sequelize.query(
     `INSERT INTO 
      TwitchLogs.${message.channelID} (SenderID, Name, Message, Emotes, Color, Badges)
