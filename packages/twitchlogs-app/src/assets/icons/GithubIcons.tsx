@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-const GithubIcon: FC<{ className?: string }> = ({ className = "" }) => {
+export const GithubIcon: FC<{ className?: string }> = ({ className = "" }) => {
   return (
     <svg
       stroke="currentColor"
@@ -14,5 +14,3 @@ const GithubIcon: FC<{ className?: string }> = ({ className = "" }) => {
     </svg>
   );
 };
-
-export default GithubIcon;
