@@ -109,7 +109,6 @@ const main = process.env.MAIN;
 const admins = process.env.ADMINS.split(" ");
 
 client.on("PRIVMSG", async (message) => {
-  console.log(message);
   await sequelize.query(
     `INSERT INTO 
      TwitchLogs.${message.channelID} (SenderID, Name, Message, Emotes, Color, Badges)
