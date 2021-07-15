@@ -1,19 +1,35 @@
-import { FC } from "react";
+import { FC, useContext, useState } from "react";
 import { classNames } from "../utils";
 import { Switch } from "@headlessui/react";
-import { XIcon, CheckIcon } from "@heroicons/react/outline";
+import { useTheme } from "../context/theme-context";
+import { MoonIcon, SunIcon } from "@heroicons/react/outline";
 
-export const ThemeSwitcher: FC<{
-  checked: boolean;
-  onChange: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ checked, onChange }) => {
+export const ThemeSwitcher: FC<{}> = ({}) => {
+  const { theme } = useTheme();
+  const context = useTheme();
+  const [checked, setChecked] = useState(false);
+
+  const onClick = () => {
+    if (theme.theme) {
+      context.dispatch({ type: "lightmode" });
+      setChecked(!checked);
+      console.log("dark", theme.theme, checked);
+    } else {
+      context.dispatch({ type: "darkmode" });
+      setChecked(!checked);
+      console.log("light", theme.theme, checked);
+    }
+  };
+
   return (
     <Switch
       checked={checked}
-      onChange={onChange}
+      onChange={onClick}
       className={classNames(
-        checked ? "bg-indigo-600" : "bg-gray-200",
-        "relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
+        checked
+          ? "bg-gray-200 focus:ring-yellow-500"
+          : "bg-gray-200 focus:ring-gray-200",
+        "relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer hover:bg-gray-300 transition duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ",
       )}
     >
       <span className="sr-only">Use setting</span>
@@ -32,7 +48,7 @@ export const ThemeSwitcher: FC<{
           )}
           aria-hidden="true"
         >
-          <XIcon className="h-3 w-3 text-gray-400" />
+          <MoonIcon className="h-4 w-4 text-gray-500" />
         </span>
         <span
           className={classNames(
@@ -43,7 +59,7 @@ export const ThemeSwitcher: FC<{
           )}
           aria-hidden="true"
         >
-          <CheckIcon className="h-3 w-3 text-indigo-600" />
+          <SunIcon className="h-4 w-4 text-yellow-500" />
         </span>
       </span>
     </Switch>

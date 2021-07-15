@@ -1,14 +1,15 @@
 import { FC, useState } from "react";
 import { classNames } from "../utils";
+import { useTheme } from "../context/theme-context";
 import Navigation from "./Navigation";
 
 const Layout: FC<{}> = ({ children }) => {
-  const [isWhite, setWhite] = useState(false);
+  const { theme } = useTheme();
   return (
-    <div className={classNames(!isWhite ? "dark" : "")}>
+    <div className={classNames(theme.theme ? "dark" : "")}>
       <div className="dark:bg-darkDark h-screen">
         <header>
-          <Navigation enabled={isWhite} setEnabled={setWhite} />
+          <Navigation />
         </header>
         <main>{children}</main>
       </div>

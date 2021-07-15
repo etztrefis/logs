@@ -3,6 +3,7 @@ import Layout from "./layouts/Layout";
 import MainPage from "./pages/Main/MainPage";
 import SettingsPage from "./pages/Settings/SettingsPage";
 import { Route, Switch, useLocation, useHistory } from "react-router-dom";
+import { ThemeProvider } from "./context/theme-context";
 
 function App() {
   const location = useLocation();
@@ -14,17 +15,19 @@ function App() {
   }, [location, history]);
 
   return (
-    <Layout>
-      <Switch>
-        <Route exact path="/">
-          <MainPage />
-        </Route>
-        <Route exact path="/settings">
-          <MainPage />
-          <SettingsPage />
-        </Route>
-      </Switch>
-    </Layout>
+    <ThemeProvider>
+      <Layout>
+        <Switch>
+          <Route exact path="/">
+            <MainPage />
+          </Route>
+          <Route exact path="/settings">
+            <MainPage />
+            <SettingsPage />
+          </Route>
+        </Switch>
+      </Layout>
+    </ThemeProvider>
   );
 }
 

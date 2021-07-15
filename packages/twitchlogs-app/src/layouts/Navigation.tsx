@@ -10,18 +10,15 @@ import {
   ViewGridIcon,
   CogIcon,
 } from "@heroicons/react/outline";
-import GithubIcon from "../assets/GithubIcons";
+import { GithubIcon } from "../assets/icons";
 
-const Navigation: FC<{
-  enabled: boolean;
-  setEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ enabled, setEnabled }) => {
+const Navigation: FC<{}> = ({}) => {
   const location = useLocation();
   const getPath = (name: string) => {
     return location.pathname === name ? true : false;
   };
   return (
-    // TODO: sticky top backdrop-filter blur and some shit  
+    // TODO: sticky top backdrop-filter blur and some shit
     <Disclosure as="nav" className="bg-white dark:bg-darkLight shadow">
       {({ open }) => (
         <>
@@ -47,7 +44,9 @@ const Navigation: FC<{
               <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
                 <Link
                   to="/"
-                  className="flex-shrink-0 flex items-center space-x-2 dark:text-white text-gray-900 hover:text-primary dark:hover:text-primary transition duration-300"
+                  className="flex-shrink-0 flex items-center space-x-2 dark:text-white 
+                  text-gray-900 hover:text-primary dark:hover:text-primary transition duration-300
+                  "
                 >
                   <img src={ppSpin} alt="ppSpin" className="mb-6" />
                   <span className="text-2xl font-semibold">twitchlogs</span>
@@ -62,7 +61,7 @@ const Navigation: FC<{
                       "transition duration-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium space-x-2",
                     )}
                   >
-                    <ViewGridIcon className="w-6 h-6 opacity-50" />
+                    <ViewGridIcon className="w-6 h-6 opacity-50 transform hover:rotate-180 transition duration-300" />
                     <span>Dashboard</span>
                   </Link>
                   <Link
@@ -74,15 +73,20 @@ const Navigation: FC<{
                       "transition duration-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium space-x-2",
                     )}
                   >
-                    <CogIcon className="w-6 h-6 opacity-50" />
+                    <CogIcon className="w-6 h-6 opacity-50 transform hover:rotate-180 transition duration-300" />
                     <span>Settings</span>
                   </Link>
                 </div>
               </div>
               <div className="flex items-center justify-center">
-                <ThemeSwitcher checked={enabled} onChange={setEnabled} />
-                <a href="https://github.com/etztrefis/twitchlogs" target="_blank" rel="noreferrer">
-                  <GithubIcon className="w-8 h-8 dark:text-white ml-6 dark:hover:text-primary hover:text-primary md:ml-10 transition duration-200" />
+                <ThemeSwitcher />
+                <a
+                  href="https://github.com/etztrefis/twitchlogs"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="ml-6 md:ml-10 focus:outline-none focus:ring-1 focus:ring-primary rounded-full"
+                >
+                  <GithubIcon className="w-8 h-8 dark:text-white dark:hover:text-primary hover:text-primary transition duration-300" />
                 </a>
               </div>
             </div>
