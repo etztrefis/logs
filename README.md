@@ -2,10 +2,8 @@
 
 ## Yarn install
 
-### `yarn plugin import @yarnpkg/plugin-workspace-tools`
+### `yarn`
 
-### `yarn install`
+## Launch
 
-## Yarn install
-
-### `yarn worspace logs-app start`
+### `yarn worspace logs-app next dev`
